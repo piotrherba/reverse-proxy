@@ -17,9 +17,8 @@ public class ExceptionHandlingController {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String handleError(Logger logger, HttpServletRequest req, Exception ex) {
+    public void handleError(Logger logger, HttpServletRequest req, Exception ex) {
         logger.error("Request: " + req.getRequestURL() + " raised " + ex);
-
 
     }
 
