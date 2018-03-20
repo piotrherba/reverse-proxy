@@ -1,33 +1,80 @@
 package hello;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.client.RestTemplate;
+import sun.net.www.http.HttpClient;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class HelloControllerTest {
 
     @Autowired
-    private MockMvc mvc;
+    private TestRestTemplate testRestTemplate;
+
+    @Rule
+    public WireMockRule service1 = new WireMockRule(options().port(9999));
+    @Rule
+    public WireMockRule service2 = new WireMockRule(options().port(9998));
+    @Rule
+    public WireMockRule service3 = new WireMockRule(options().port(9997));
+
 
     @Test
-    public void getHello() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.get("/").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(equalTo("Greetings from Spring Boot!")));
+    public void getRedirect() throws Exception {
+
+
+        service1.stubFor(get(urlEqualTo("/get"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "text/plain")
+                        .withBody("Hello world!")));
+
+        String body = testRestTemplate.getForObject("/get", String.class);
+        assertEquals(body, "Hello world!");
+
+    }
+
+    @Test
+    public void postRedirect() throws Exception {
+
+        service2.stubFor(post(urlEqualTo("/post"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "text/plain")
+                        .withBody("Successfully posted!")));
+
+        String body = testRestTemplate.postForEntity("/post", "Here is something", String.class).getBody();
+        assertEquals(body, "Successfully posted!");
+
+
+    }
+
+    @Test
+    public void putRedirectTest() throws Exception {
+
+        service3.stubFor(put(urlEqualTo("/put"))
+        .willReturn(aResponse().withHeader("Content-Type","text/plain")
+        .withBody("Success")));
+
+        testRestTemplate.put("/put", "Something", String.class);
+
+
     }
 
 }
