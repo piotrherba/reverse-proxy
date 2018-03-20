@@ -36,6 +36,10 @@ public class HelloController {
         restTemplate.put(putDestination + request.getServletPath(), body, String.class);
     }
 
+    @DeleteMapping
+    public void deleteRequest() throws Exception {
+        throw new Exception();
+    }
 
     @ExceptionHandler
     public String exception(){
