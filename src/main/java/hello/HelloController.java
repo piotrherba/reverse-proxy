@@ -2,6 +2,8 @@ package hello;
 
 import com.github.tomakehurst.wiremock.extension.responsetemplating.RequestTemplateModel;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -33,7 +35,7 @@ public class HelloController {
 
     @PutMapping
     public void putRedirect(RestTemplate restTemplate, HttpServletRequest request, @RequestBody String body){
-        restTemplate.put(putDestination + request.getServletPath(), body, String.class);
+        restTemplate.exchange(putDestination + request.getServletPath(), HttpMethod.PUT, new HttpEntity<>(body), String.class);
     }
 
     @DeleteMapping
@@ -41,9 +43,6 @@ public class HelloController {
         throw new Exception();
     }
 
-    @ExceptionHandler
-    public String exception(){
-        return "Error while handling request";
-    }
 
 }
+
